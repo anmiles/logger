@@ -1,7 +1,6 @@
 var fs = require('fs');
 var clc = require('cli-color');
 var moment = require('moment');
-require('json-beautify');
 require('prototypes');
 
 function Logger() {
@@ -30,7 +29,7 @@ function Logger() {
     }
     
     function beautify(str) {
-        return JSON.isScalar(str) ? str : JSON.beautify(str);
+        return typeof(str) !== "object" || Object.prototype.toString.apply(str) === "[object RegExp]" ? str : JSON.stringify(str, null, '    ');
     }
 
     logger.dir = function(logPath, groupByDate) {
