@@ -49,19 +49,19 @@ function Logger() {
     };
 
     logger.log = function(str, showStack) {
-        log(str, null, typeof showStack == 'undefined' ? false : showStack);
+        log(str, null, typeof showStack === 'undefined' ? false : showStack);
     };
 
     logger.info = function(str, showStack) {
-        log(str, clc.green, typeof showStack == 'undefined' ? false : showStack);
+        log(str, clc.green, typeof showStack === 'undefined' ? false : showStack);
     };
 
     logger.warn = function(str, showStack) {
-        log(str, clc.yellow.bold, typeof showStack == 'undefined' ? false : showStack);
+        log(str, clc.yellow.bold, typeof showStack === 'undefined' ? false : showStack);
     };
 
     logger.error = function(str, showStack) {
-        log(str, clc.red.bold, typeof showStack == 'undefined' ? true : showStack);
+        log(str, clc.red.bold, typeof showStack === 'undefined' ? true : showStack);
     };
 
     logger.stop = function(str) {
