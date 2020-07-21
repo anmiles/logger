@@ -1,0 +1,13 @@
+{
+    "version":  "1.0.0",
+    "name":  "logger",
+    "description":  "",
+    "dependencies":  {
+        "cli-color":  "latest",
+        "moment":  "latest",
+        "fs":  "latest"
+    },
+    "author":  "Anatoliy Oblauhov",
+    "license":  "ISC",
+    "main":  "logger.js"
+}
