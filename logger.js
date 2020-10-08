@@ -82,7 +82,7 @@ function Logger() {
     
     logger.clear = function() {
         fs.deleteFolderRecursive(logDir);
-    };    
+    };
 }
 
 module.exports = new Logger();
