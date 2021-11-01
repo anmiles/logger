@@ -7,7 +7,7 @@
         "moment": "latest",
         "fs": "latest"
     },
-    "author": "Anatoliy Oblauhov",
+    "author": "Anatoliy Oblaukhov",
     "license": "ISC",
     "main": "logger.js"
 }
