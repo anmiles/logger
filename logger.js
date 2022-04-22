@@ -12,7 +12,7 @@ function Logger() {
 
     function log(str, modifier, showStack, skipDebug) {
         if (showStack) {
-            str = str.stack ? str.stack : new Error(beautify(str)).stack.replace(/^Error/, '');
+            str = str && str.stack ? str.stack : new Error(beautify(str)).stack.replace(/^Error/, '');
         } else {
             str = beautify(str);
         }
