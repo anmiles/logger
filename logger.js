@@ -27,7 +27,7 @@ function Logger() {
         fs.ensureDirectory(logDir);
         fs.appendFileSync(logFile, str + '\r\n');
     }
-    
+
     function beautify(str) {
         return typeof(str) !== "object" || Object.prototype.toString.apply(str) === "[object RegExp]" ? str : JSON.stringify(str, null, '    ');
     }
@@ -79,7 +79,7 @@ function Logger() {
     logger.time = function(safe) {
         return moment().format(safe ? 'YYYY.MM.DD_HH.mm.ss.SSS' : 'YYYY-MM-DD HH:mm:ss.SSS');
     };
-    
+
     logger.clear = function() {
         fs.deleteFolderRecursive(logDir);
     };
