@@ -1,7 +1,7 @@
-var fs = require('fs');
-var clc = require('cli-color');
-var moment = require('moment');
-require('prototypes');
+const fs = require('fs');
+const clc = require('cli-color');
+const moment = require('moment');
+require('../prototypes');
 
 function Logger() {
     var logger = this;

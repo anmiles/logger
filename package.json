@@ -4,8 +4,7 @@
     "description": "",
     "dependencies": {
         "cli-color": "^2.0.3",
-        "moment": "^2.29.4",
-        "prototypes": "file:../prototypes"
+        "moment": "^2.29.4"
     },
     "author": "Anatoliy Oblaukhov",
     "license": "ISC",
