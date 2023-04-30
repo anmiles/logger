@@ -4,9 +4,21 @@
     "description": "",
     "dependencies": {
         "cli-color": "^2.0.3",
+        "colorette": "^2.0.20",
         "moment": "^2.29.4"
+    },
+    "devDependencies": {
+        "jest": "^29.5.0"
     },
     "author": "Anatoliy Oblaukhov",
     "license": "ISC",
-    "main": "logger.js"
+    "main": "logger.js",
+    "scripts": {
+        "test": "jest --verbose",
+        "test:coverage": "npm test -- --coverage",
+        "test:ci": "npm test -- --ci --coverage",
+        "test:watch": "npm test -- --watch",
+        "test:watch:coverage": "npm test -- --watch --coverage",
+        "test:report:coverage": "nyc report --nycrc-path ./coverage.config.js -t ./coverage --report-dir ./coverage"
+    }
 }

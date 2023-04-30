@@ -1,5 +1,6 @@
 const fs = require('fs');
-const clc = require('cli-color');
+const path = require('path');
+const colorette = require('colorette');
 const moment = require('moment');
 require('../prototypes');
 
@@ -10,70 +11,69 @@ function Logger() {
     var extension = "log";
     logger.showDebug = false;
 
-    function log(str, modifier, showStack, skipDebug) {
-        if (showStack) {
-            str = str && str.stack ? str.stack : new Error(beautify(str)).stack.replace(/^Error/, '');
-        } else {
-            str = beautify(str);
-        }
+    function log(data, { modifier, stack, debug } = {}) {
+        const prefix = logger.time() + '\t';
+        const suffix = stack
+            ? '\n' + Error.prototype.constructor.call(Error, '').stack.split('\n').filter(s => s.startsWith('    at ')).join('\n')
+            : '';
 
-        str = logger.time() + '\t' + str;
-        if (logger.showDebug || !skipDebug) console.log(typeof modifier == 'function' ? modifier(str) : str);
+        data = data.map(obj => beautify(obj));
+        modifier = modifier || (str => str);
+
+        if (logger.showDebug || !debug) console.log(prefix + modifier(data.join(' ')) + suffix);
 
         if (!logDir) {
             logger.dir('./logs');
         }
 
         fs.ensureDirectory(logDir);
-        fs.appendFileSync(logFile, str + '\r\n');
+        fs.appendFileSync(logFile, prefix + data.join(' ') + suffix + '\r\n');
     }
 
-    function beautify(str) {
-        return typeof(str) !== "object" || Object.prototype.toString.apply(str) === "[object RegExp]" ? str : JSON.stringify(str, null, '    ');
+    function beautify(data) {
+        return typeof(data) !== "object" || Object.prototype.toString.apply(data) === "[object RegExp]" ? data : JSON.stringify(data, null, '    ');
     }
 
     logger.dir = function(logPath, groupByDate) {
-        var callerfile = fs.getFileName(fs.getCallerFile());
+        var callerFile = fs.getFileName(fs.getCallerFile());
+        logPath = logPath.replace(/\/$/, '');
 
         if (groupByDate) {
-            logDir = logPath + moment().format('YYYY/MM/DD');
-            logFile = '{0}/{1}.{2}.{3}'.format(logDir, callerfile, moment().format('HH.mm.ss.SSS'), extension);
+            logDir = `${logPath}/${moment().format('YYYY/MM/DD')}`;
+            logFile = `${logDir}/${callerFile}.${moment().format('HH.mm.ss.SSS')}.${extension}`;
         } else {
             logDir = logPath;
-            logFile = '{0}/{1}.{2}.{3}'.format(logDir, callerfile, logger.time(true), extension);
+            logFile = `${logDir}/${callerFile}.${logger.time(true)}.${extension}`;
         }
 
         process.on('uncaughtException', function(err) {
+            /* istanbul ignore next */
             logger.error(err);
         });
     };
 
-    logger.log = function(str, showStack) {
-        log(str, null, typeof showStack === 'undefined' ? false : showStack);
+    logger.log = function(...data) {
+        log(data);
     };
 
-    logger.info = function(str, showStack) {
-        log(str, clc.green, typeof showStack === 'undefined' ? false : showStack);
+    logger.debug = function(...data) {
+        log(data, { debug: true });
     };
 
-    logger.warn = function(str, showStack) {
-        log(str, clc.yellow.bold, typeof showStack === 'undefined' ? false : showStack);
+    logger.trace = function(...data) {
+        log(data, { debug: true, stack: true });
     };
 
-    logger.error = function(str, showStack) {
-        log(str, clc.red.bold, typeof showStack === 'undefined' ? true : showStack);
+    logger.info = function(...data) {
+        log(data, { modifier: colorette.greenBright });
     };
 
-    logger.stop = function(str) {
-        throw str;
-    }
-
-    logger.trace = function() {
-        log('', clc.cyan, true);
+    logger.warn = function(...data) {
+        log(data, { modifier: colorette.yellowBright });
     };
 
-    logger.debug = function(str, showStack) {
-        log(str, null, showStack, true);
+    logger.error = function(...data) {
+        log(data, { modifier: colorette.redBright, stack: true });
     };
 
     logger.time = function(safe) {
