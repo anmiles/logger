@@ -54,6 +54,44 @@ exports[`src/lib/logger error should apply red bright color to console 2`] = `
 ]
 `;
 
+exports[`src/lib/logger error should log error with stack 1`] = `
+[
+  [
+    "2012-12-26 07:40:00.025	<red>test exception</red>
+    at error.js:1:1",
+  ],
+]
+`;
+
+exports[`src/lib/logger error should log error with stack 2`] = `
+[
+  [
+    "/log/root/2012.12.26_07.40.00.025.log",
+    "2012-12-26 07:40:00.025	test exception
+    at error.js:1:1
+",
+  ],
+]
+`;
+
+exports[`src/lib/logger error should log error without stack 1`] = `
+[
+  [
+    "2012-12-26 07:40:00.025	<red>test exception</red>",
+  ],
+]
+`;
+
+exports[`src/lib/logger error should log error without stack 2`] = `
+[
+  [
+    "/log/root/2012.12.26_07.40.00.025.log",
+    "2012-12-26 07:40:00.025	test exception
+",
+  ],
+]
+`;
+
 exports[`src/lib/logger info should apply green bright color to console 1`] = `
 [
   [

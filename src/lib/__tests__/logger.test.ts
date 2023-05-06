@@ -1,4 +1,5 @@
 import fs from 'fs';
+import emitter from 'event-emitter';
 import Logger from '../logger';
 
 jest.useFakeTimers();
@@ -17,48 +18,43 @@ jest.mock('colorette', () => ({
 	cyanBright   : jest.fn().mockImplementation((text) => `<cyan>${text}</cyan>`),
 }));
 
-const originalConsole = global.console;
-global.console.log    = jest.fn();
-global.console.debug  = jest.fn();
-global.console.info   = jest.fn();
-global.console.warn   = jest.fn();
-global.console.error  = jest.fn();
+const mockFunctions   = [ 'log', 'debug', 'info', 'warn', 'error' ] as const;
+const originalConsole = {} as typeof global.console;
+const consoleSpy      = {} as Record<typeof mockFunctions[number], jest.SpyInstance<void, [message?: any, ...optionalParams: any[]], any>>;
 
-const consoleSpy = {
-	log   : jest.spyOn(global.console, 'log').mockImplementation(),
-	debug : jest.spyOn(global.console, 'debug').mockImplementation(),
-	info  : jest.spyOn(global.console, 'info').mockImplementation(),
-	warn  : jest.spyOn(global.console, 'warn').mockImplementation(),
-	error : jest.spyOn(global.console, 'error').mockImplementation(),
-};
+mockFunctions.forEach((func) => {
+	originalConsole[func] = global.console[func];
+	global.console[func]  = jest.fn();
+	consoleSpy[func]      = jest.spyOn(global.console, func).mockImplementation();
+});
 
-const mockDate = new Date(2012, 11, 26, 7, 40, 0, 25);
+const mockProcess = emitter(process);
+
 const root     = '/log/root';
+const mockDate = new Date(2012, 11, 26, 7, 40, 0, 25);
+const stack    = 'Error\n    at test.js:1:1\n    at index.js:1:1';
 
 let logger: Logger;
 let exists: boolean;
 let appendFileSyncSpy: jest.SpyInstance;
-let errorOriginalConstructor: Function;
+let getStackTraceSpy: jest.SpyInstance;
 
 beforeAll(() => {
 	appendFileSyncSpy = jest.spyOn(fs, 'appendFileSync');
+	getStackTraceSpy  = jest.spyOn(Logger, 'getStackTrace');
 	jest.setSystemTime(mockDate);
-	errorOriginalConstructor    = Error.prototype.constructor;
-	Error.prototype.constructor = (message: string) => ({
-		message,
-		stack : `Error: ${message}\n    at test.js:1:1\n    at index.js:1:1`,
-	});
 });
 
 beforeEach(() => {
 	appendFileSyncSpy.mockImplementation();
+	getStackTraceSpy.mockReturnValue(stack);
 });
 
 afterAll(() => {
 	appendFileSyncSpy.mockRestore();
+	getStackTraceSpy.mockRestore();
 	jest.setSystemTime(new Date());
-	Error.prototype.constructor = errorOriginalConstructor;
-	global.console              = originalConsole;
+	global.console = originalConsole;
 });
 
 describe('src/lib/logger', () => {
@@ -77,6 +73,15 @@ describe('src/lib/logger', () => {
 			it('should strip trailing slash', () => {
 				logger = new Logger({ root : '/log/app/' });
 				expect(logger['root']).toEqual('/log/app');
+			});
+
+			it('should forward uncaught exception to console.error', () => {
+				logger         = new Logger();
+				const errorSpy = jest.spyOn(logger, 'error').mockImplementation();
+				const error    = new Error('test exception');
+				mockProcess.emit('uncaughtException', error);
+				expect(errorSpy).toHaveBeenCalledWith(error);
+				errorSpy.mockRestore();
 			});
 		});
 
@@ -260,6 +265,24 @@ describe('src/lib/logger', () => {
 		it('should apply red bright color to console', () => {
 			logger = new Logger({ root });
 			logger.error('test1', /^\d+$/, { b : 2 });
+			expect(consoleSpy.error.mock.calls).toMatchSnapshot();
+			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
+		});
+
+		it('should log error with stack', () => {
+			logger      = new Logger({ root });
+			const error = new Error('test exception');
+			error.stack = 'Error\n    at error.js:1:1';
+			logger.error(error);
+			expect(consoleSpy.error.mock.calls).toMatchSnapshot();
+			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
+		});
+
+		it('should log error without stack', () => {
+			logger      = new Logger({ root });
+			const error = new Error('test exception');
+			delete error.stack;
+			logger.error(error);
 			expect(consoleSpy.error.mock.calls).toMatchSnapshot();
 			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
 		});

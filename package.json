@@ -27,12 +27,12 @@
     "test:report:coverage": "nyc report --nycrc-path ./coverage.config.js -t ./coverage --report-dir ./coverage"
   },
   "dependencies": {
-    "cli-color": "^2.0.3",
     "colorette": "^2.0.20",
     "moment": "^2.29.4"
   },
   "devDependencies": {
     "@anmiles/eslint-config": "^1.0.4",
+    "@types/event-emitter": "^0.3.3",
     "@types/jest": "^29.5.1",
     "@typescript-eslint/eslint-plugin": "^5.59.2",
     "@typescript-eslint/parser": "^5.59.2",
@@ -40,6 +40,7 @@
     "eslint-plugin-align-assignments": "^1.1.2",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-jest": "^27.2.1",
+    "event-emitter": "^0.3.5",
     "jest": "^29.5.0",
     "nyc": "^15.1.0",
     "rimraf": "^5.0.0",

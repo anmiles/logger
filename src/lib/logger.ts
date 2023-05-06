@@ -31,23 +31,37 @@ export default class Logger {
 			this.dirname  = path.dirname(this.filename);
 		}
 
-		process.on('uncaughtException', function(err: Error) {
-			/* istanbul ignore next */
-			this.error(err);
-		});
+		((logger) => {
+			process.on('uncaughtException', function(err: Error) {
+				logger.error(err);
+			});
+		})(this);
+	}
+
+	/* istanbul ignore next */
+	static getStackTrace() {
+		return new Error().stack;
 	}
 
 	private process(consoleFunc: (message?: any, ...optionalParams: any[]) => void, data: any[], { modifier = ((str: string) => str), stack, debug }: {modifier?: (text: string | number) => string, stack?: boolean, debug?: boolean} = {}): void {
 		const prefix = `${Logger.timestamp({ date : true, time : true })}\t`;
 
-		const suffix = stack
-			? `\n${Error.prototype.constructor.call(Error, '').stack.split('\n').filter((s: string) => s.startsWith('    at ')).join('\n')}`
-			: '';
+		let suffix = '';
 
-		const stringifiedData = data.map((obj: any) => this.stringify(obj));
+		if (stack) {
+			const errorStack = ((data[0] instanceof Error ? data[0].stack : Logger.getStackTrace()) || '');
+
+			suffix = errorStack
+				? `\n${errorStack.split('\n').filter((s: string) => s.startsWith('    at ')).join('\n')}`
+				: '';
+		}
+
+		const stringifiedData = data[0] instanceof Error
+			? data[0].message
+			: data.map((obj: any) => this.stringify(obj)).join(' ');
 
 		if (!debug || this.showDebug) {
-			consoleFunc(prefix + modifier(stringifiedData.join(' ')) + suffix);
+			consoleFunc(prefix + modifier(stringifiedData) + suffix);
 		}
 
 		if (this.dirname) {
@@ -57,7 +71,7 @@ export default class Logger {
 		}
 
 		if (this.filename) {
-			fs.appendFileSync(this.filename, `${prefix + stringifiedData.join(' ') + suffix}\n`);
+			fs.appendFileSync(this.filename, `${prefix + stringifiedData + suffix}\n`);
 		}
 	}
 
