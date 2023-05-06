@@ -1,0 +1,219 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`logger debug should not show log by default 1`] = `
+[
+  [
+    "/log/root/2012.12.26_07.40.00.025.log",
+    "2012-12-26 07:40:00.025	test string
+",
+  ],
+]
+`;
+
+exports[`logger debug should show log if showDebug is true 1`] = `
+[
+  [
+    "2012-12-26 07:40:00.025	test string",
+  ],
+]
+`;
+
+exports[`logger debug should show log if showDebug is true 2`] = `
+[
+  [
+    "/log/root/2012.12.26_07.40.00.025.log",
+    "2012-12-26 07:40:00.025	test string
+",
+  ],
+]
+`;
+
+exports[`logger error should apply red bright color to console 1`] = `
+[
+  [
+    "2012-12-26 07:40:00.025	<red>test1 /^\\d+$/ {
+	"b": 2
+}</red>
+    at test.js:1:1
+    at index.js:1:1",
+  ],
+]
+`;
+
+exports[`logger error should apply red bright color to console 2`] = `
+[
+  [
+    "/log/root/2012.12.26_07.40.00.025.log",
+    "2012-12-26 07:40:00.025	test1 /^\\d+$/ {
+	"b": 2
+}
+    at test.js:1:1
+    at index.js:1:1
+",
+  ],
+]
+`;
+
+exports[`logger info should apply green bright color to console 1`] = `
+[
+  [
+    "2012-12-26 07:40:00.025	<green>test1 /^\\d+$/ {
+	"b": 2
+}</green>",
+  ],
+]
+`;
+
+exports[`logger info should apply green bright color to console 2`] = `
+[
+  [
+    "/log/root/2012.12.26_07.40.00.025.log",
+    "2012-12-26 07:40:00.025	test1 /^\\d+$/ {
+	"b": 2
+}
+",
+  ],
+]
+`;
+
+exports[`logger process should log object 1`] = `
+[
+  [
+    "2012-12-26 07:40:00.025	{
+	"a": 1,
+	"second key": {
+		"date": "26.12.2012, 07:40:00"
+	}
+}",
+  ],
+]
+`;
+
+exports[`logger process should log object 2`] = `
+[
+  [
+    "/log/root/2012.12.26_07.40.00.025.log",
+    "2012-12-26 07:40:00.025	{
+	"a": 1,
+	"second key": {
+		"date": "26.12.2012, 07:40:00"
+	}
+}
+",
+  ],
+]
+`;
+
+exports[`logger process should log string 1`] = `
+[
+  [
+    "2012-12-26 07:40:00.025	test string",
+  ],
+]
+`;
+
+exports[`logger process should log string 2`] = `
+[
+  [
+    "/log/root/2012.12.26_07.40.00.025.log",
+    "2012-12-26 07:40:00.025	test string
+",
+  ],
+]
+`;
+
+exports[`logger process should log string, regex and object 1`] = `
+[
+  [
+    "2012-12-26 07:40:00.025	test1 /^\\d+$/ {
+	"b": 2
+}",
+  ],
+]
+`;
+
+exports[`logger process should log string, regex and object 2`] = `
+[
+  [
+    "/log/root/2012.12.26_07.40.00.025.log",
+    "2012-12-26 07:40:00.025	test1 /^\\d+$/ {
+	"b": 2
+}
+",
+  ],
+]
+`;
+
+exports[`logger process should log two strings 1`] = `
+[
+  [
+    "2012-12-26 07:40:00.025	test1 test2",
+  ],
+]
+`;
+
+exports[`logger process should log two strings 2`] = `
+[
+  [
+    "/log/root/2012.12.26_07.40.00.025.log",
+    "2012-12-26 07:40:00.025	test1 test2
+",
+  ],
+]
+`;
+
+exports[`logger trace should append stack and not show log if showDebug is false 1`] = `
+[
+  [
+    "/log/root/2012.12.26_07.40.00.025.log",
+    "2012-12-26 07:40:00.025	test string
+    at test.js:1:1
+    at index.js:1:1
+",
+  ],
+]
+`;
+
+exports[`logger trace should append stack and show log if showDebug is true 1`] = `
+[
+  [
+    "2012-12-26 07:40:00.025	test string
+    at test.js:1:1
+    at index.js:1:1",
+  ],
+]
+`;
+
+exports[`logger trace should append stack and show log if showDebug is true 2`] = `
+[
+  [
+    "/log/root/2012.12.26_07.40.00.025.log",
+    "2012-12-26 07:40:00.025	test string
+    at test.js:1:1
+    at index.js:1:1
+",
+  ],
+]
+`;
+
+exports[`logger warn should apply yellow bright color to console 1`] = `
+[
+  [
+    "2012-12-26 07:40:00.025	<yellow>test1 /^\\d+$/ {
+	"b": 2
+}</yellow>",
+  ],
+]
+`;
+
+exports[`logger warn should apply yellow bright color to console 2`] = `
+[
+  [
+    "/log/root/2012.12.26_07.40.00.025.log",
+    "2012-12-26 07:40:00.025	test1 /^\\d+$/ {
+	"b": 2
+}
+",
+  ],
+]
+`;
