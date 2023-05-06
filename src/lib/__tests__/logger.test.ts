@@ -17,20 +17,31 @@ jest.mock('colorette', () => ({
 	cyanBright   : jest.fn().mockImplementation((text) => `<cyan>${text}</cyan>`),
 }));
 
+const originalConsole = global.console;
+global.console.log    = jest.fn();
+global.console.debug  = jest.fn();
+global.console.info   = jest.fn();
+global.console.warn   = jest.fn();
+global.console.error  = jest.fn();
+
+const consoleSpy = {
+	log   : jest.spyOn(global.console, 'log').mockImplementation(),
+	debug : jest.spyOn(global.console, 'debug').mockImplementation(),
+	info  : jest.spyOn(global.console, 'info').mockImplementation(),
+	warn  : jest.spyOn(global.console, 'warn').mockImplementation(),
+	error : jest.spyOn(global.console, 'error').mockImplementation(),
+};
+
 const mockDate = new Date(2012, 11, 26, 7, 40, 0, 25);
 const root     = '/log/root';
 
-let exists: boolean;
-let errorOriginalConstructor: Function;
 let logger: Logger;
-
-let logSpy: jest.SpyInstance;
+let exists: boolean;
 let appendFileSyncSpy: jest.SpyInstance;
+let errorOriginalConstructor: Function;
 
 beforeAll(() => {
-	logSpy            = jest.spyOn(console, 'log');
 	appendFileSyncSpy = jest.spyOn(fs, 'appendFileSync');
-
 	jest.setSystemTime(mockDate);
 	errorOriginalConstructor    = Error.prototype.constructor;
 	Error.prototype.constructor = (message: string) => ({
@@ -40,19 +51,17 @@ beforeAll(() => {
 });
 
 beforeEach(() => {
-	logSpy.mockImplementation();
 	appendFileSyncSpy.mockImplementation();
 });
 
 afterAll(() => {
-	logSpy.mockRestore();
 	appendFileSyncSpy.mockRestore();
-
 	jest.setSystemTime(new Date());
 	Error.prototype.constructor = errorOriginalConstructor;
+	global.console              = originalConsole;
 });
 
-describe('logger', () => {
+describe('src/lib/logger', () => {
 	describe('constructor', () => {
 		describe('root', () => {
 			it('should not be set by default', () => {
@@ -137,7 +146,7 @@ describe('logger', () => {
 		});
 	});
 
-	describe('process', () => {
+	describe('log', () => {
 		it('should not write into log file if root is not specified', () => {
 			logger = new Logger();
 			logger.log('test string');
@@ -169,28 +178,28 @@ describe('logger', () => {
 		it('should log string', () => {
 			logger = new Logger({ root });
 			logger.log('test string');
-			expect(logSpy.mock.calls).toMatchSnapshot();
+			expect(consoleSpy.log.mock.calls).toMatchSnapshot();
 			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
 		});
 
 		it('should log two strings', () => {
 			logger = new Logger({ root });
 			logger.log('test1', 'test2');
-			expect(logSpy.mock.calls).toMatchSnapshot();
+			expect(consoleSpy.log.mock.calls).toMatchSnapshot();
 			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
 		});
 
 		it('should log object', () => {
 			logger = new Logger({ root });
 			logger.log({ 'a' : 1, 'second key' : { date : new Date().toLocaleString('ru') } });
-			expect(logSpy.mock.calls).toMatchSnapshot();
+			expect(consoleSpy.log.mock.calls).toMatchSnapshot();
 			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
 		});
 
 		it('should log string, regex and object', () => {
 			logger = new Logger({ root });
 			logger.log('test1', /^\d+$/, { b : 2 });
-			expect(logSpy.mock.calls).toMatchSnapshot();
+			expect(consoleSpy.log.mock.calls).toMatchSnapshot();
 			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
 		});
 	});
@@ -199,15 +208,15 @@ describe('logger', () => {
 		it('should not show log by default', () => {
 			logger = new Logger({ root });
 			logger.debug('test string');
-			expect(logSpy).not.toHaveBeenCalled();
+			expect(consoleSpy.debug).not.toHaveBeenCalled();
 			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
 		});
 
 		it('should show log if showDebug is true', () => {
 			logger = new Logger({ root, showDebug : true });
 			logger.debug('test string');
-			expect(logSpy).toHaveBeenCalledTimes(1);
-			expect(logSpy.mock.calls).toMatchSnapshot();
+			expect(consoleSpy.debug).toHaveBeenCalledTimes(1);
+			expect(consoleSpy.debug.mock.calls).toMatchSnapshot();
 			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
 		});
 	});
@@ -216,15 +225,15 @@ describe('logger', () => {
 		it('should append stack and not show log if showDebug is false', () => {
 			logger = new Logger({ root });
 			logger.trace('test string');
-			expect(logSpy).not.toHaveBeenCalled();
+			expect(consoleSpy.debug).not.toHaveBeenCalled();
 			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
 		});
 
 		it('should append stack and show log if showDebug is true', () => {
 			logger = new Logger({ root, showDebug : true });
 			logger.trace('test string');
-			expect(logSpy).toHaveBeenCalledTimes(1);
-			expect(logSpy.mock.calls).toMatchSnapshot();
+			expect(consoleSpy.debug).toHaveBeenCalledTimes(1);
+			expect(consoleSpy.debug.mock.calls).toMatchSnapshot();
 			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
 		});
 	});
@@ -233,7 +242,7 @@ describe('logger', () => {
 		it('should apply green bright color to console', () => {
 			logger = new Logger({ root });
 			logger.info('test1', /^\d+$/, { b : 2 });
-			expect(logSpy.mock.calls).toMatchSnapshot();
+			expect(consoleSpy.info.mock.calls).toMatchSnapshot();
 			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
 		});
 	});
@@ -242,7 +251,7 @@ describe('logger', () => {
 		it('should apply yellow bright color to console', () => {
 			logger = new Logger({ root });
 			logger.warn('test1', /^\d+$/, { b : 2 });
-			expect(logSpy.mock.calls).toMatchSnapshot();
+			expect(consoleSpy.warn.mock.calls).toMatchSnapshot();
 			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
 		});
 	});
@@ -251,7 +260,7 @@ describe('logger', () => {
 		it('should apply red bright color to console', () => {
 			logger = new Logger({ root });
 			logger.error('test1', /^\d+$/, { b : 2 });
-			expect(logSpy.mock.calls).toMatchSnapshot();
+			expect(consoleSpy.error.mock.calls).toMatchSnapshot();
 			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
 		});
 	});

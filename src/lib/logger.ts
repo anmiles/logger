@@ -37,7 +37,7 @@ export default class Logger {
 		});
 	}
 
-	process(data: any[], { modifier = ((str: string) => str), stack, debug }: {modifier?: (text: string | number) => string, stack?: boolean, debug?: boolean} = {}): void {
+	private process(consoleFunc: (message?: any, ...optionalParams: any[]) => void, data: any[], { modifier = ((str: string) => str), stack, debug }: {modifier?: (text: string | number) => string, stack?: boolean, debug?: boolean} = {}): void {
 		const prefix = `${Logger.timestamp({ date : true, time : true })}\t`;
 
 		const suffix = stack
@@ -47,7 +47,7 @@ export default class Logger {
 		const stringifiedData = data.map((obj: any) => this.stringify(obj));
 
 		if (!debug || this.showDebug) {
-			console.log(prefix + modifier(stringifiedData.join(' ')) + suffix);
+			consoleFunc(prefix + modifier(stringifiedData.join(' ')) + suffix);
 		}
 
 		if (this.dirname) {
@@ -66,27 +66,27 @@ export default class Logger {
 	}
 
 	log(...data: any[]): void {
-		this.process(data);
+		this.process(console.log, data);
 	}
 
 	debug(...data: any[]): void {
-		this.process(data, { debug : true });
+		this.process(console.debug, data, { debug : true });
 	}
 
 	trace(...data: any[]): void {
-		this.process(data, { debug : true, stack : true });
+		this.process(console.debug, data, { debug : true, stack : true });
 	}
 
 	info(...data: any[]): void {
-		this.process(data, { modifier : colorette.greenBright });
+		this.process(console.info, data, { modifier : colorette.greenBright });
 	}
 
 	warn(...data: any[]): void {
-		this.process(data, { modifier : colorette.yellowBright });
+		this.process(console.warn, data, { modifier : colorette.yellowBright });
 	}
 
 	error(...data: any[]): void {
-		this.process(data, { modifier : colorette.redBright, stack : true });
+		this.process(console.error, data, { modifier : colorette.redBright, stack : true });
 	}
 
 	static timestamp({ date = false, time = false, safe = false }: {date?: boolean, time? : boolean, safe?: boolean} = {}): string {
