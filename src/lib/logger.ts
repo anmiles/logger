@@ -3,7 +3,7 @@ import path from 'path';
 import colorette from 'colorette';
 import moment from 'moment';
 
-export default class Logger {
+export class Logger {
 	private root?: string;
 	private filename?: string;
 	private dirname?: string;
@@ -127,3 +127,12 @@ export default class Logger {
 		}
 	}
 }
+
+const defaultLogger = new Logger();
+
+export const log = defaultLogger.log;
+export const debug = defaultLogger.debug;
+export const trace = defaultLogger.trace;
+export const info = defaultLogger.info;
+export const warn = defaultLogger.warn;
+export const error = defaultLogger.error;

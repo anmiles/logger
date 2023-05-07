@@ -1,6 +1,6 @@
 import fs from 'fs';
 import emitter from 'event-emitter';
-import Logger from '../logger';
+import { Logger } from '../logger';
 
 jest.useFakeTimers();
 
@@ -339,6 +339,16 @@ describe('src/lib/logger', () => {
 		it('should clear log directory if specified', () => {
 			new Logger({ root }).clear();
 			expect(fs.rmSync).toHaveBeenCalledWith(root, { recursive : true, force : true });
+		});
+	});
+
+	describe('export', () => {
+		const defaultLogger = new Logger();
+
+		([ 'log', 'debug', 'trace', 'warn', 'info', 'error' ] as const).forEach((func) => {
+			it(`should export '${func}' as the method of the same name of default Logger`, () => {
+				expect(require('../logger')[func]).toEqual(defaultLogger[func]);
+			});
 		});
 	});
 });
