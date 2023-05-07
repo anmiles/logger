@@ -128,11 +128,13 @@ export class Logger {
 	}
 }
 
-const defaultLogger = new Logger();
+const defaultLogger = new Logger({ showDebug : true });
 
-export const log = defaultLogger.log;
-export const debug = defaultLogger.debug;
-export const trace = defaultLogger.trace;
-export const info = defaultLogger.info;
-export const warn = defaultLogger.warn;
-export const error = defaultLogger.error;
+export const log = defaultLogger.log.bind(defaultLogger);
+export const debug = defaultLogger.debug.bind(defaultLogger);
+export const trace = defaultLogger.trace.bind(defaultLogger);
+export const info = defaultLogger.info.bind(defaultLogger);
+export const warn = defaultLogger.warn.bind(defaultLogger);
+export const error = defaultLogger.error.bind(defaultLogger);
+
+export default { Logger, log, debug, trace, info, warn, error };

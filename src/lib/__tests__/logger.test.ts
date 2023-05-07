@@ -1,6 +1,6 @@
 import fs from 'fs';
 import emitter from 'event-emitter';
-import { Logger } from '../logger';
+import { Logger, log, debug, trace, info, warn, error } from '../logger';
 
 jest.useFakeTimers();
 
@@ -215,6 +215,25 @@ describe('src/lib/logger', () => {
 			expect(consoleSpy.log.mock.calls).toMatchSnapshot();
 			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
 		});
+
+		describe('exported', () => {
+			it('should not write to file', () => {
+				log('test string');
+				expect(appendFileSyncSpy).not.toHaveBeenCalled();
+			});
+
+			it('should call console.log', () => {
+				log('test string');
+				expect(consoleSpy.log).toHaveBeenCalledTimes(1);
+			});
+
+			it('should call console.log the same way as the method of default Logger', () => {
+				log('test string');
+				logger = new Logger({ root });
+				logger.log('test string');
+				expect(consoleSpy.log.mock.calls[0]).toEqual(consoleSpy.log.mock.calls[1]);
+			});
+		});
 	});
 
 	describe('debug', () => {
@@ -231,6 +250,25 @@ describe('src/lib/logger', () => {
 			expect(consoleSpy.debug).toHaveBeenCalledTimes(1);
 			expect(consoleSpy.debug.mock.calls).toMatchSnapshot();
 			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
+		});
+
+		describe('exported', () => {
+			it('should not write to file', () => {
+				debug('test string');
+				expect(appendFileSyncSpy).not.toHaveBeenCalled();
+			});
+
+			it('should call console.debug', () => {
+				debug('test string');
+				expect(consoleSpy.debug).toHaveBeenCalledTimes(1);
+			});
+
+			it('should call console.debug the same way as the method of default Logger with showDebug always set', () => {
+				debug('test string');
+				logger = new Logger({ root, showDebug : true });
+				logger.debug('test string');
+				expect(consoleSpy.debug.mock.calls[0]).toEqual(consoleSpy.debug.mock.calls[1]);
+			});
 		});
 	});
 
@@ -249,6 +287,25 @@ describe('src/lib/logger', () => {
 			expect(consoleSpy.debug.mock.calls).toMatchSnapshot();
 			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
 		});
+
+		describe('exported', () => {
+			it('should not write to file', () => {
+				trace('test string');
+				expect(appendFileSyncSpy).not.toHaveBeenCalled();
+			});
+
+			it('should call console.debug', () => {
+				trace('test string');
+				expect(consoleSpy.debug).toHaveBeenCalledTimes(1);
+			});
+
+			it('should call console.debug the same way as the method of default Logger with showDebug always set', () => {
+				trace('test string');
+				logger = new Logger({ root, showDebug : true });
+				logger.trace('test string');
+				expect(consoleSpy.debug.mock.calls[0]).toEqual(consoleSpy.debug.mock.calls[1]);
+			});
+		});
 	});
 
 	describe('info', () => {
@@ -258,6 +315,25 @@ describe('src/lib/logger', () => {
 			expect(consoleSpy.info.mock.calls).toMatchSnapshot();
 			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
 		});
+
+		describe('exported', () => {
+			it('should not write to file', () => {
+				info('test string');
+				expect(appendFileSyncSpy).not.toHaveBeenCalled();
+			});
+
+			it('should call console.info', () => {
+				info('test string');
+				expect(consoleSpy.info).toHaveBeenCalledTimes(1);
+			});
+
+			it('should call console.info the same way as the method of default Logger', () => {
+				info('test string');
+				logger = new Logger({ root });
+				logger.info('test string');
+				expect(consoleSpy.info.mock.calls[0]).toEqual(consoleSpy.info.mock.calls[1]);
+			});
+		});
 	});
 
 	describe('warn', () => {
@@ -266,6 +342,25 @@ describe('src/lib/logger', () => {
 			logger.warn('test1', /^\d+$/, { b : 2 });
 			expect(consoleSpy.warn.mock.calls).toMatchSnapshot();
 			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
+		});
+
+		describe('exported', () => {
+			it('should not write to file', () => {
+				warn('test string');
+				expect(appendFileSyncSpy).not.toHaveBeenCalled();
+			});
+
+			it('should call console.warn', () => {
+				warn('test string');
+				expect(consoleSpy.warn).toHaveBeenCalledTimes(1);
+			});
+
+			it('should call console.warn the same way as the method of default Logger', () => {
+				warn('test string');
+				logger = new Logger({ root });
+				logger.warn('test string');
+				expect(consoleSpy.warn.mock.calls[0]).toEqual(consoleSpy.warn.mock.calls[1]);
+			});
 		});
 	});
 
@@ -293,6 +388,25 @@ describe('src/lib/logger', () => {
 			logger.error(error);
 			expect(consoleSpy.error.mock.calls).toMatchSnapshot();
 			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
+		});
+
+		describe('exported', () => {
+			it('should not write to file', () => {
+				error('test string');
+				expect(appendFileSyncSpy).not.toHaveBeenCalled();
+			});
+
+			it('should call console.error', () => {
+				error('test string');
+				expect(consoleSpy.error).toHaveBeenCalledTimes(1);
+			});
+
+			it('should call console.error the same way as the method of default Logger', () => {
+				error('test string');
+				logger = new Logger({ root });
+				logger.error('test string');
+				expect(consoleSpy.error.mock.calls[0]).toEqual(consoleSpy.error.mock.calls[1]);
+			});
 		});
 	});
 
@@ -339,16 +453,6 @@ describe('src/lib/logger', () => {
 		it('should clear log directory if specified', () => {
 			new Logger({ root }).clear();
 			expect(fs.rmSync).toHaveBeenCalledWith(root, { recursive : true, force : true });
-		});
-	});
-
-	describe('export', () => {
-		const defaultLogger = new Logger();
-
-		([ 'log', 'debug', 'trace', 'warn', 'info', 'error' ] as const).forEach((func) => {
-			it(`should export '${func}' as the method of the same name of default Logger`, () => {
-				expect(require('../logger')[func]).toEqual(defaultLogger[func]);
-			});
 		});
 	});
 });
