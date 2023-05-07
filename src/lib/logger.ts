@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import colorette from 'colorette';
+import * as colorette from 'colorette';
 import moment from 'moment';
 
 export class Logger {
