@@ -84,12 +84,20 @@ describe('src/lib/logger', () => {
 				errorSpy.mockRestore();
 			});
 		});
-
 		describe('showDebug', () => {
-			[ true, false ].forEach((showDebug: boolean) => {
-				it(`should be set to ${showDebug} if specified ${showDebug}`, () => {
-					logger = new Logger({ showDebug });
-					expect(logger['showDebug']).toEqual(showDebug);
+			it('should be set to false by default', () => {
+				logger = new Logger();
+				expect(logger['showDebug']).toEqual(false);
+			});
+
+			[
+				{ argument : true, property : true },
+				{ argument : false, property : false },
+				{ argument : undefined, property : false },
+			].forEach(({ argument, property }: { argument: boolean | undefined, property: boolean }) => {
+				it(`should be set to ${property} if specified ${argument}`, () => {
+					logger = new Logger({ showDebug : argument });
+					expect(logger['showDebug']).toEqual(property);
 				});
 			});
 		});
