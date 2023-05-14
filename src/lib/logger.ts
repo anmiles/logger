@@ -8,11 +8,13 @@ export class Logger {
 	private filename?: string;
 	private dirname?: string;
 	private showDebug: boolean;
+	private showTime: boolean;
 	private extension: string;
 
-	constructor({ root, groupByDate = false, showDebug = false, extension = 'log' }: {root?: string, groupByDate?: boolean, showDebug?: boolean, extension?: string} = {}) {
+	constructor({ root, groupByDate = false, showDebug = false, showTime = false, extension = 'log' }: {root?: string, groupByDate?: boolean, showDebug?: boolean, showTime?: boolean, extension?: string} = {}) {
 		this.root      = root?.replace(/\/$/, '');
 		this.showDebug = showDebug;
+		this.showTime  = showTime;
 		this.extension = extension.replace(/^\./, '');
 
 		if (this.root) {
@@ -44,7 +46,9 @@ export class Logger {
 	}
 
 	private process(consoleFunc: (message?: any, ...optionalParams: any[]) => void, data: any[], { modifier = ((str: string) => str), stack, debug }: {modifier?: (text: string | number) => string, stack?: boolean, debug?: boolean} = {}): void {
-		const prefix = `${Logger.timestamp({ date : true, time : true })}\t`;
+		const prefix = this.showTime
+			? `${Logger.timestamp({ date : true, time : true })}\t`
+			: '';
 
 		let suffix = '';
 

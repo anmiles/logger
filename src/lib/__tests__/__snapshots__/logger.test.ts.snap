@@ -1,16 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`src/lib/logger debug should not show log by default 1`] = `
-[
-  [
-    "/log/root/2012.12.26_07.40.00.025.log",
-    "2012-12-26 07:40:00.025	test string
-",
-  ],
-]
-`;
-
-exports[`src/lib/logger debug should show log if showDebug is true 1`] = `
+exports[`src/lib/logger debug should show timestamp and log if showDebug = true and showTime = true 1`] = `
 [
   [
     "2012-12-26 07:40:00.025	test string",
@@ -18,7 +8,7 @@ exports[`src/lib/logger debug should show log if showDebug is true 1`] = `
 ]
 `;
 
-exports[`src/lib/logger debug should show log if showDebug is true 2`] = `
+exports[`src/lib/logger debug should show timestamp and log if showDebug = true and showTime = true 2`] = `
 [
   [
     "/log/root/2012.12.26_07.40.00.025.log",
@@ -28,7 +18,61 @@ exports[`src/lib/logger debug should show log if showDebug is true 2`] = `
 ]
 `;
 
+exports[`src/lib/logger debug should not show log by default 1`] = `
+[
+  [
+    "/log/root/2012.12.26_07.40.00.025.log",
+    "test string
+",
+  ],
+]
+`;
+
+exports[`src/lib/logger debug should show log if showDebug = true 1`] = `
+[
+  [
+    "test string",
+  ],
+]
+`;
+
+exports[`src/lib/logger debug should show log if showDebug = true 2`] = `
+[
+  [
+    "/log/root/2012.12.26_07.40.00.025.log",
+    "test string
+",
+  ],
+]
+`;
+
 exports[`src/lib/logger error should apply red bright color to console 1`] = `
+[
+  [
+    "<red>test1 /^\\d+$/ {
+	"b": 2
+}</red>
+    at test.js:1:1
+    at index.js:1:1",
+  ],
+]
+`;
+
+exports[`src/lib/logger error should apply red bright color to console 2`] = `
+[
+  [
+    "/log/root/2012.12.26_07.40.00.025.log",
+    "test1 /^\\d+$/ {
+	"b": 2
+}
+    at test.js:1:1
+    at index.js:1:1
+",
+  ],
+]
+`;
+
+exports[`src/lib/logger error should apply red bright color to console and prepend timestamp if showTime = true 1`] = `
 [
   [
     "2012-12-26 07:40:00.025	<red>test1 /^\\d+$/ {
@@ -40,7 +84,7 @@ exports[`src/lib/logger error should apply red bright color to console 1`] = `
 ]
 `;
 
-exports[`src/lib/logger error should apply red bright color to console 2`] = `
+exports[`src/lib/logger error should apply red bright color to console and prepend timestamp if showTime = true 2`] = `
 [
   [
     "/log/root/2012.12.26_07.40.00.025.log",
@@ -57,7 +101,7 @@ exports[`src/lib/logger error should apply red bright color to console 2`] = `
 exports[`src/lib/logger error should log error with stack 1`] = `
 [
   [
-    "2012-12-26 07:40:00.025	<red>test exception</red>
+    "<red>test exception</red>
     at error.js:1:1",
   ],
 ]
@@ -67,7 +111,7 @@ exports[`src/lib/logger error should log error with stack 2`] = `
 [
   [
     "/log/root/2012.12.26_07.40.00.025.log",
-    "2012-12-26 07:40:00.025	test exception
+    "test exception
     at error.js:1:1
 ",
   ],
@@ -77,7 +121,7 @@ exports[`src/lib/logger error should log error with stack 2`] = `
 exports[`src/lib/logger error should log error without stack 1`] = `
 [
   [
-    "2012-12-26 07:40:00.025	<red>test exception</red>",
+    "<red>test exception</red>",
   ],
 ]
 `;
@@ -86,13 +130,35 @@ exports[`src/lib/logger error should log error without stack 2`] = `
 [
   [
     "/log/root/2012.12.26_07.40.00.025.log",
-    "2012-12-26 07:40:00.025	test exception
+    "test exception
 ",
   ],
 ]
 `;
 
 exports[`src/lib/logger info should apply green bright color to console 1`] = `
+[
+  [
+    "<green>test1 /^\\d+$/ {
+	"b": 2
+}</green>",
+  ],
+]
+`;
+
+exports[`src/lib/logger info should apply green bright color to console 2`] = `
+[
+  [
+    "/log/root/2012.12.26_07.40.00.025.log",
+    "test1 /^\\d+$/ {
+	"b": 2
+}
+",
+  ],
+]
+`;
+
+exports[`src/lib/logger info should apply green bright color to console and prepend timestamp if showTime = true 1`] = `
 [
   [
     "2012-12-26 07:40:00.025	<green>test1 /^\\d+$/ {
@@ -102,7 +168,7 @@ exports[`src/lib/logger info should apply green bright color to console 1`] = `
 ]
 `;
 
-exports[`src/lib/logger info should apply green bright color to console 2`] = `
+exports[`src/lib/logger info should apply green bright color to console and prepend timestamp if showTime = true 2`] = `
 [
   [
     "/log/root/2012.12.26_07.40.00.025.log",
@@ -117,7 +183,7 @@ exports[`src/lib/logger info should apply green bright color to console 2`] = `
 exports[`src/lib/logger log should log object 1`] = `
 [
   [
-    "2012-12-26 07:40:00.025	{
+    "{
 	"a": 1,
 	"second key": {
 		"date": "26.12.2012, 07:40:00"
@@ -131,7 +197,7 @@ exports[`src/lib/logger log should log object 2`] = `
 [
   [
     "/log/root/2012.12.26_07.40.00.025.log",
-    "2012-12-26 07:40:00.025	{
+    "{
 	"a": 1,
 	"second key": {
 		"date": "26.12.2012, 07:40:00"
@@ -145,7 +211,7 @@ exports[`src/lib/logger log should log object 2`] = `
 exports[`src/lib/logger log should log string 1`] = `
 [
   [
-    "2012-12-26 07:40:00.025	test string",
+    "test string",
   ],
 ]
 `;
@@ -154,7 +220,7 @@ exports[`src/lib/logger log should log string 2`] = `
 [
   [
     "/log/root/2012.12.26_07.40.00.025.log",
-    "2012-12-26 07:40:00.025	test string
+    "test string
 ",
   ],
 ]
@@ -163,7 +229,7 @@ exports[`src/lib/logger log should log string 2`] = `
 exports[`src/lib/logger log should log string, regex and object 1`] = `
 [
   [
-    "2012-12-26 07:40:00.025	test1 /^\\d+$/ {
+    "test1 /^\\d+$/ {
 	"b": 2
 }",
   ],
@@ -174,9 +240,27 @@ exports[`src/lib/logger log should log string, regex and object 2`] = `
 [
   [
     "/log/root/2012.12.26_07.40.00.025.log",
-    "2012-12-26 07:40:00.025	test1 /^\\d+$/ {
+    "test1 /^\\d+$/ {
 	"b": 2
 }
+",
+  ],
+]
+`;
+
+exports[`src/lib/logger log should log timestamp and string with showTime = true 1`] = `
+[
+  [
+    "2012-12-26 07:40:00.025	test string",
+  ],
+]
+`;
+
+exports[`src/lib/logger log should log timestamp and string with showTime = true 2`] = `
+[
+  [
+    "/log/root/2012.12.26_07.40.00.025.log",
+    "2012-12-26 07:40:00.025	test string
 ",
   ],
 ]
@@ -185,7 +269,7 @@ exports[`src/lib/logger log should log string, regex and object 2`] = `
 exports[`src/lib/logger log should log two strings 1`] = `
 [
   [
-    "2012-12-26 07:40:00.025	test1 test2",
+    "test1 test2",
   ],
 ]
 `;
@@ -194,17 +278,17 @@ exports[`src/lib/logger log should log two strings 2`] = `
 [
   [
     "/log/root/2012.12.26_07.40.00.025.log",
-    "2012-12-26 07:40:00.025	test1 test2
+    "test1 test2
 ",
   ],
 ]
 `;
 
-exports[`src/lib/logger trace should append stack and not show log if showDebug is false 1`] = `
+exports[`src/lib/logger trace should append stack and not show log if showDebug = false 1`] = `
 [
   [
     "/log/root/2012.12.26_07.40.00.025.log",
-    "2012-12-26 07:40:00.025	test string
+    "test string
     at test.js:1:1
     at index.js:1:1
 ",
@@ -212,7 +296,29 @@ exports[`src/lib/logger trace should append stack and not show log if showDebug 
 ]
 `;
 
-exports[`src/lib/logger trace should append stack and show log if showDebug is true 1`] = `
+exports[`src/lib/logger trace should append stack and show log if showDebug = true 1`] = `
+[
+  [
+    "test string
+    at test.js:1:1
+    at index.js:1:1",
+  ],
+]
+`;
+
+exports[`src/lib/logger trace should append stack and show log if showDebug = true 2`] = `
+[
+  [
+    "/log/root/2012.12.26_07.40.00.025.log",
+    "test string
+    at test.js:1:1
+    at index.js:1:1
+",
+  ],
+]
+`;
+
+exports[`src/lib/logger trace should append stack and show timestamp and log if showDebug = true and showTime = true 1`] = `
 [
   [
     "2012-12-26 07:40:00.025	test string
@@ -222,7 +328,7 @@ exports[`src/lib/logger trace should append stack and show log if showDebug is t
 ]
 `;
 
-exports[`src/lib/logger trace should append stack and show log if showDebug is true 2`] = `
+exports[`src/lib/logger trace should append stack and show timestamp and log if showDebug = true and showTime = true 2`] = `
 [
   [
     "/log/root/2012.12.26_07.40.00.025.log",
@@ -237,7 +343,7 @@ exports[`src/lib/logger trace should append stack and show log if showDebug is t
 exports[`src/lib/logger warn should apply yellow bright color to console 1`] = `
 [
   [
-    "2012-12-26 07:40:00.025	<yellow>test1 /^\\d+$/ {
+    "<yellow>test1 /^\\d+$/ {
 	"b": 2
 }</yellow>",
   ],
@@ -245,6 +351,28 @@ exports[`src/lib/logger warn should apply yellow bright color to console 1`] = `
 `;
 
 exports[`src/lib/logger warn should apply yellow bright color to console 2`] = `
+[
+  [
+    "/log/root/2012.12.26_07.40.00.025.log",
+    "test1 /^\\d+$/ {
+	"b": 2
+}
+",
+  ],
+]
+`;
+
+exports[`src/lib/logger warn should apply yellow bright color to console and prepend timestamp if showTime = true 1`] = `
+[
+  [
+    "2012-12-26 07:40:00.025	<yellow>test1 /^\\d+$/ {
+	"b": 2
+}</yellow>",
+  ],
+]
+`;
+
+exports[`src/lib/logger warn should apply yellow bright color to console and prepend timestamp if showTime = true 2`] = `
 [
   [
     "/log/root/2012.12.26_07.40.00.025.log",

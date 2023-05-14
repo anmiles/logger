@@ -195,6 +195,13 @@ describe('src/lib/logger', () => {
 			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
 		});
 
+		it('should log timestamp and string with showTime = true', () => {
+			logger = new Logger({ root, showTime : true });
+			logger.log('test string');
+			expect(consoleSpy.log.mock.calls).toMatchSnapshot();
+			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
+		});
+
 		it('should log two strings', () => {
 			logger = new Logger({ root });
 			logger.log('test1', 'test2');
@@ -244,8 +251,16 @@ describe('src/lib/logger', () => {
 			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
 		});
 
-		it('should show log if showDebug is true', () => {
+		it('should show log if showDebug = true', () => {
 			logger = new Logger({ root, showDebug : true });
+			logger.debug('test string');
+			expect(consoleSpy.debug).toHaveBeenCalledTimes(1);
+			expect(consoleSpy.debug.mock.calls).toMatchSnapshot();
+			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
+		});
+
+		it('should show timestamp and log if showDebug = true and showTime = true', () => {
+			logger = new Logger({ root, showDebug : true, showTime : true });
 			logger.debug('test string');
 			expect(consoleSpy.debug).toHaveBeenCalledTimes(1);
 			expect(consoleSpy.debug.mock.calls).toMatchSnapshot();
@@ -273,15 +288,23 @@ describe('src/lib/logger', () => {
 	});
 
 	describe('trace', () => {
-		it('should append stack and not show log if showDebug is false', () => {
+		it('should append stack and not show log if showDebug = false', () => {
 			logger = new Logger({ root });
 			logger.trace('test string');
 			expect(consoleSpy.debug).not.toHaveBeenCalled();
 			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
 		});
 
-		it('should append stack and show log if showDebug is true', () => {
+		it('should append stack and show log if showDebug = true', () => {
 			logger = new Logger({ root, showDebug : true });
+			logger.trace('test string');
+			expect(consoleSpy.debug).toHaveBeenCalledTimes(1);
+			expect(consoleSpy.debug.mock.calls).toMatchSnapshot();
+			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
+		});
+
+		it('should append stack and show timestamp and log if showDebug = true and showTime = true', () => {
+			logger = new Logger({ root, showDebug : true, showTime : true });
 			logger.trace('test string');
 			expect(consoleSpy.debug).toHaveBeenCalledTimes(1);
 			expect(consoleSpy.debug.mock.calls).toMatchSnapshot();
@@ -316,6 +339,13 @@ describe('src/lib/logger', () => {
 			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
 		});
 
+		it('should apply green bright color to console and prepend timestamp if showTime = true', () => {
+			logger = new Logger({ root, showTime : true });
+			logger.info('test1', /^\d+$/, { b : 2 });
+			expect(consoleSpy.info.mock.calls).toMatchSnapshot();
+			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
+		});
+
 		describe('exported', () => {
 			it('should not write to file', () => {
 				info('test string');
@@ -344,6 +374,13 @@ describe('src/lib/logger', () => {
 			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
 		});
 
+		it('should apply yellow bright color to console and prepend timestamp if showTime = true', () => {
+			logger = new Logger({ root, showTime : true });
+			logger.warn('test1', /^\d+$/, { b : 2 });
+			expect(consoleSpy.warn.mock.calls).toMatchSnapshot();
+			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
+		});
+
 		describe('exported', () => {
 			it('should not write to file', () => {
 				warn('test string');
@@ -367,6 +404,13 @@ describe('src/lib/logger', () => {
 	describe('error', () => {
 		it('should apply red bright color to console', () => {
 			logger = new Logger({ root });
+			logger.error('test1', /^\d+$/, { b : 2 });
+			expect(consoleSpy.error.mock.calls).toMatchSnapshot();
+			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
+		});
+
+		it('should apply red bright color to console and prepend timestamp if showTime = true', () => {
+			logger = new Logger({ root, showTime : true });
 			logger.error('test1', /^\d+$/, { b : 2 });
 			expect(consoleSpy.error.mock.calls).toMatchSnapshot();
 			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
