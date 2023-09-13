@@ -1,6 +1,6 @@
 {
   "name": "@anmiles/logger",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "Logging data with timestamp into console and/or file",
   "keywords": [
     "logging",
