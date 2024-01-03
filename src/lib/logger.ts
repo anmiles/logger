@@ -3,7 +3,13 @@ import path from 'path';
 import * as colorette from 'colorette';
 import moment from 'moment';
 
-export class Logger {
+export const methods = [ 'log', 'debug', 'trace', 'info', 'warn', 'error' ] as const;
+
+type LoggerMethods = {
+	[K in typeof methods[number]]: (...data: any[]) => void;
+}
+
+export class Logger implements LoggerMethods {
 	private root?: string;
 	private filename?: string;
 	private dirname?: string;
