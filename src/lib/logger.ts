@@ -51,7 +51,14 @@ export class Logger implements LoggerMethods {
 		return new Error().stack;
 	}
 
-	private process(consoleFunc: (message?: any, ...optionalParams: any[]) => void, data: any[], { modifier = ((str: string) => str), stack, debug }: {modifier?: (text: string | number) => string, stack?: boolean, debug?: boolean} = {}): void {
+	private process(
+		consoleFunc: (message?: any, ...optionalParams: any[]) => void,
+		data: any[], {
+			modifier = ((text: number | string) => text.toString()), stack, debug }: {modifier?: (text: string | number) => string,
+			stack?: boolean,
+			debug?: boolean
+		} = {},
+	): void {
 		const prefix = this.showTime
 			? `${Logger.timestamp({ date : true, time : true })}\t`
 			: '';

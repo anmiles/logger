@@ -1,6 +1,6 @@
 import fs from 'fs';
 import emitter from 'event-emitter';
-import { Logger, log, debug, trace, info, warn, error } from '../logger';
+import { Logger, log, debug, trace, info, warn, error } from '../logger.js';
 
 jest.useFakeTimers();
 
