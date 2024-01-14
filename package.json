@@ -17,6 +17,7 @@
   "type": "module",
   "exports": "./dist/index.js",
   "files": [
+    "*",
     "dist"
   ],
   "scripts": {
