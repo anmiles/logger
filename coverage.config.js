@@ -1,4 +1,4 @@
-export default {
+module.exports = {
 	'check-coverage' : true,
 	'statements'     : 100,
 	'branches'       : 100,

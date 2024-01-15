@@ -1,15 +1,7 @@
-export default {
-	preset    : 'ts-jest/presets/default-esm',
+module.exports = {
+	preset    : 'ts-jest',
 	transform : {
-		'\\.[jt]sx?$' : [
-			'ts-jest', {
-				useESM   : true,
-				tsconfig : '<rootDir>/tsconfig.test.json',
-			},
-		],
-	},
-	moduleNameMapper : {
-		'(.+)\\.js' : '$1',
+		'^.+\\.tsx?$' : 'ts-jest',
 	},
 
 	clearMocks : true,

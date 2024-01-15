@@ -14,11 +14,10 @@
   "engines": {
     "node": ">=18.14.2"
   },
-  "type": "module",
-  "exports": "./dist/index.js",
+  "main": "dist/index.js",
   "scripts": {
     "build": "rimraf dist && tsc -p ./tsconfig.build.json",
-    "lint": "eslint --ext .js,.cjs,.ts --ignore-path .gitignore .",
+    "lint": "eslint --ext .js,.ts --ignore-path .gitignore .",
     "lint:fix": "npm run lint -- --fix",
     "test": "jest --verbose",
     "test:coverage": "npm test -- --coverage",
@@ -32,12 +31,12 @@
     "moment": "^2.30.1"
   },
   "devDependencies": {
-    "@anmiles/eslint-config": "^4.0.1",
-    "@anmiles/tsconfig": "^1.0.11",
+    "@anmiles/eslint-config": "^5.0.0",
+    "@anmiles/tsconfig": "^2.0.0",
     "@types/event-emitter": "^0.3.5",
     "@types/jest": "^29.5.11",
-    "@typescript-eslint/eslint-plugin": "^6.18.1",
-    "@typescript-eslint/parser": "^6.18.1",
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0",
     "eslint": "^8.56.0",
     "eslint-plugin-align-assignments": "^1.1.2",
     "eslint-plugin-import": "^2.29.1",
