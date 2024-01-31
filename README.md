@@ -1,5 +1,5 @@
-# @anmiles/logger
-
+# lopezjariza00@gmail.com.@anmiles/logger
+lopezjariza00@gmail.com
 Logging data with timestamp into console and/or file
 
 ----
