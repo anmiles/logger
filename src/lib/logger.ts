@@ -141,11 +141,13 @@ class Logger implements LoggerMethods {
 	}
 
 	private stringify(data: unknown): RegExp | string {
-		if (typeof data === 'object') {
-			return JSON.stringify(data, null, '	');
+		if (typeof data !== 'object') {
+			return String(data);
 		}
 
-		return data instanceof RegExp ? data : String(data);
+		return data instanceof RegExp
+			? data
+			: JSON.stringify(data, null, '	');
 	}
 }
 
