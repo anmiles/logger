@@ -3,21 +3,21 @@ import path from 'path';
 import * as colorette from 'colorette';
 import moment from 'moment';
 
-export const methods = [ 'log', 'debug', 'trace', 'info', 'warn', 'error' ] as const;
+const methods = [ 'log', 'debug', 'trace', 'info', 'warn', 'error' ] as const;
 
 type LoggerMethods = {
-	[K in typeof methods[number]]: (...data: any[]) => void;
-}
+	[K in typeof methods[number]]: (...data: unknown[]) => void;
+};
 
-export class Logger implements LoggerMethods {
-	private root?: string;
-	private filename?: string;
-	private dirname?: string;
-	private showDebug: boolean;
-	private showTime: boolean;
-	private extension: string;
+class Logger implements LoggerMethods {
+	private readonly root?     : string;
+	private readonly filename? : string;
+	private readonly dirname?  : string;
+	private readonly showDebug : boolean;
+	private readonly showTime  : boolean;
+	private readonly extension : string;
 
-	constructor({ root, groupByDate = false, showDebug = false, showTime = false, extension = 'log' }: {root?: string, groupByDate?: boolean, showDebug?: boolean, showTime?: boolean, extension?: string} = {}) {
+	constructor({ root, groupByDate = false, showDebug = false, showTime = false, extension = 'log' }: { root? : string; groupByDate? : boolean; showDebug? : boolean; showTime? : boolean; extension? : string } = {}) {
 		this.root      = root?.replace(/\/$/, '');
 		this.showDebug = showDebug;
 		this.showTime  = showTime;
@@ -46,17 +46,65 @@ export class Logger implements LoggerMethods {
 		})(this);
 	}
 
+	static timestamp({ date = false, time = false, safe = false }: { date? : boolean; time? : boolean; safe? : boolean } = {}): string {
+		const formats = [];
+
+		if (!date && !time) {
+			throw new Error('Expected date and/or time to be requested');
+		}
+
+		if (date) {
+			formats.push(safe ? 'YYYY.MM.DD' : 'YYYY-MM-DD');
+		}
+
+		if (time) {
+			formats.push(safe ? 'HH.mm.ss.SSS' : 'HH:mm:ss.SSS');
+		}
+
+		return moment().format(formats.join(safe ? '_' : ' '));
+	}
+
 	/* istanbul ignore next */
-	static getStackTrace() {
+	static getStackTrace(): string | undefined {
 		return new Error().stack;
 	}
 
+	log(...data: unknown[]): void {
+		this.process(console.log, data);
+	}
+
+	debug(...data: unknown[]): void {
+		this.process(console.debug, data, { debug : true });
+	}
+
+	trace(...data: unknown[]): void {
+		this.process(console.debug, data, { debug : true, stack : true });
+	}
+
+	info(...data: unknown[]): void {
+		this.process(console.info, data, { modifier : colorette.greenBright });
+	}
+
+	warn(...data: unknown[]): void {
+		this.process(console.warn, data, { modifier : colorette.yellowBright });
+	}
+
+	error(...data: unknown[]): void {
+		this.process(console.error, data, { modifier : colorette.redBright, stack : true });
+	}
+
+	clear(): void {
+		if (this.dirname) {
+			fs.rmSync(this.dirname, { force : true, recursive : true });
+		}
+	}
+
 	private process(
-		consoleFunc: (message?: any, ...optionalParams: any[]) => void,
-		data: any[], {
-			modifier = ((text: number | string) => text.toString()), stack, debug }: {modifier?: (text: string | number) => string,
-			stack?: boolean,
-			debug?: boolean
+		consoleFunc: (message?: unknown, ...optionalParams: unknown[]) => void,
+		data: unknown[], {
+			modifier = (text: number | string) => text.toString(), stack, debug }: { modifier? : (text: number | string) => string;
+			stack?                                                                             : boolean;
+			debug?                                                                             : boolean;
 		} = {},
 	): void {
 		const prefix = this.showTime
@@ -66,7 +114,7 @@ export class Logger implements LoggerMethods {
 		let suffix = '';
 
 		if (stack) {
-			const errorStack = ((data[0] instanceof Error ? data[0].stack : Logger.getStackTrace()) || '');
+			const errorStack = (data[0] instanceof Error ? data[0].stack : Logger.getStackTrace()) ?? '';
 
 			suffix = errorStack
 				? `\n${errorStack.split('\n').filter((s: string) => s.startsWith('    at ')).join('\n')}`
@@ -75,7 +123,7 @@ export class Logger implements LoggerMethods {
 
 		const stringifiedData = data[0] instanceof Error
 			? data[0].message
-			: data.map((obj: any) => this.stringify(obj)).join(' ');
+			: data.map((obj: unknown) => this.stringify(obj)).join(' ');
 
 		if (!debug || this.showDebug) {
 			consoleFunc(prefix + modifier(stringifiedData) + suffix);
@@ -92,66 +140,23 @@ export class Logger implements LoggerMethods {
 		}
 	}
 
-	private stringify(data: any): string {
-		return typeof (data) !== 'object' || Object.prototype.toString.apply(data) === '[object RegExp]' ? data : JSON.stringify(data, null, '	');
-	}
-
-	log(...data: any[]): void {
-		this.process(console.log, data);
-	}
-
-	debug(...data: any[]): void {
-		this.process(console.debug, data, { debug : true });
-	}
-
-	trace(...data: any[]): void {
-		this.process(console.debug, data, { debug : true, stack : true });
-	}
-
-	info(...data: any[]): void {
-		this.process(console.info, data, { modifier : colorette.greenBright });
-	}
-
-	warn(...data: any[]): void {
-		this.process(console.warn, data, { modifier : colorette.yellowBright });
-	}
-
-	error(...data: any[]): void {
-		this.process(console.error, data, { modifier : colorette.redBright, stack : true });
-	}
-
-	static timestamp({ date = false, time = false, safe = false }: {date?: boolean, time? : boolean, safe?: boolean} = {}): string {
-		const formats = [];
-
-		if (!date && !time) {
-			throw 'Expected date and/or time to be requested';
+	private stringify(data: unknown): RegExp | string {
+		if (typeof data === 'object') {
+			return JSON.stringify(data, null, '	');
 		}
 
-		if (date) {
-			formats.push(safe ? 'YYYY.MM.DD' : 'YYYY-MM-DD');
-		}
-
-		if (time) {
-			formats.push(safe ? 'HH.mm.ss.SSS' : 'HH:mm:ss.SSS');
-		}
-
-		return moment().format(formats.join(safe ? '_' : ' '));
-	}
-
-	clear(): void {
-		if (this.dirname) {
-			fs.rmSync(this.dirname, { force : true, recursive : true });
-		}
+		return data instanceof RegExp ? data : String(data);
 	}
 }
 
 const defaultLogger = new Logger({ showDebug : true });
 
-export const log = defaultLogger.log.bind(defaultLogger);
-export const debug = defaultLogger.debug.bind(defaultLogger);
-export const trace = defaultLogger.trace.bind(defaultLogger);
-export const info = defaultLogger.info.bind(defaultLogger);
-export const warn = defaultLogger.warn.bind(defaultLogger);
-export const error = defaultLogger.error.bind(defaultLogger);
+const log   = defaultLogger.log.bind(defaultLogger);
+const debug = defaultLogger.debug.bind(defaultLogger);
+const trace = defaultLogger.trace.bind(defaultLogger);
+const info  = defaultLogger.info.bind(defaultLogger);
+const warn  = defaultLogger.warn.bind(defaultLogger);
+const error = defaultLogger.error.bind(defaultLogger);
 
+export { Logger, log, debug, trace, info, warn, error, methods };
 export default { Logger, log, debug, trace, info, warn, error, methods };

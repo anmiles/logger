@@ -20,7 +20,7 @@ jest.mock('colorette', () => ({
 
 const mockFunctions   = [ 'log', 'debug', 'info', 'warn', 'error' ] as const;
 const originalConsole = {} as typeof global.console;
-const consoleSpy      = {} as Record<typeof mockFunctions[number], jest.SpyInstance<void, [message?: any, ...optionalParams: any[]], any>>;
+const consoleSpy      = {} as Record<typeof mockFunctions[number], jest.SpyInstance<void, [message?: unknown, ...optionalParams: unknown[]]>>;
 
 mockFunctions.forEach((func) => {
 	originalConsole[func] = global.console[func];
@@ -94,7 +94,7 @@ describe('src/lib/logger', () => {
 				{ argument : true, property : true },
 				{ argument : false, property : false },
 				{ argument : undefined, property : false },
-			].forEach(({ argument, property }: { argument: boolean | undefined, property: boolean }) => {
+			].forEach(({ argument, property }: { argument : boolean | undefined; property : boolean }) => {
 				it(`should be set to ${property} if specified ${argument}`, () => {
 					logger = new Logger({ showDebug : argument });
 					expect(logger['showDebug']).toEqual(property);
