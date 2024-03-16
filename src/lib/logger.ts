@@ -161,4 +161,3 @@ const warn  = defaultLogger.warn.bind(defaultLogger);
 const error = defaultLogger.error.bind(defaultLogger);
 
 export { Logger, log, debug, trace, info, warn, error, methods };
-export default { Logger, log, debug, trace, info, warn, error, methods };

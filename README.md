@@ -13,7 +13,7 @@ Logging data with timestamp into console and/or file
 ### Logging to screen and file system
 
 ```js
-import Logger from '@anmiles/logger';
+import { Logger } from '@anmiles/logger';
 
 const logger = new Logger({ root: '/log/app', groupByDate: true, showDebug: true });
 logger.error('Error message with stack trace');
