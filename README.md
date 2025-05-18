@@ -26,3 +26,12 @@ import { error } from '@anmiles/logger';
 
 error('Error message with stack trace');
 ```
+
+### Using default import to access to multiple log methods
+
+```js
+import logger from '@anmiles/logger';
+
+logger.info('Info message');
+logger.error('Error message with stack trace');
+```

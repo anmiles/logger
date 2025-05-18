@@ -1,60 +1,76 @@
 import fs from 'fs';
+
 import emitter from 'event-emitter';
-import { Logger, log, debug, trace, info, warn, error } from '../logger';
+import mockFs from 'mock-fs';
+
+import { Logger, log, debug, trace, info, warn, error } from '../logger'; // eslint-disable-line import/order
 
 jest.useFakeTimers();
 
-jest.mock('fs', () => ({
-	appendFileSync : jest.fn(),
-	existsSync     : jest.fn().mockImplementation(() => exists),
-	mkdirSync      : jest.fn(),
-	rmSync         : jest.fn(),
-}));
-
 jest.mock('colorette', () => ({
-	greenBright  : jest.fn().mockImplementation((text) => `<green>${text}</green>`),
-	yellowBright : jest.fn().mockImplementation((text) => `<yellow>${text}</yellow>`),
-	redBright    : jest.fn().mockImplementation((text) => `<red>${text}</red>`),
-	cyanBright   : jest.fn().mockImplementation((text) => `<cyan>${text}</cyan>`),
+	gray        : jest.fn().mockImplementation((text) => `<gray>${text}</gray>`),
+	greenBright : jest.fn().mockImplementation((text) => `<green>${text}</green>`),
+	yellowBright: jest.fn().mockImplementation((text) => `<yellow>${text}</yellow>`),
+	redBright   : jest.fn().mockImplementation((text) => `<red>${text}</red>`),
+	cyanBright  : jest.fn().mockImplementation((text) => `<cyan>${text}</cyan>`),
 }));
 
-const mockFunctions   = [ 'log', 'debug', 'info', 'warn', 'error' ] as const;
-const originalConsole = {} as typeof global.console;
-const consoleSpy      = {} as Record<typeof mockFunctions[number], jest.SpyInstance<void, [message?: unknown, ...optionalParams: unknown[]]>>;
+const mockFunctions = [ 'log', 'debug', 'trace', 'info', 'warn', 'error' ] as const;
+const originalConsole: {
+	[K in typeof mockFunctions[number]]: typeof global.console[K]
+} = {
+	log  : global.console.log,
+	debug: global.console.debug,
+	trace: global.console.trace,
+	info : global.console.info,
+	warn : global.console.warn,
+	error: global.console.error,
+};
 
-mockFunctions.forEach((func) => {
-	originalConsole[func] = global.console[func];
-	global.console[func]  = jest.fn();
-	consoleSpy[func]      = jest.spyOn(global.console, func).mockImplementation();
-});
+const consoleSpy: {
+	[K in typeof mockFunctions[number]]: jest.SpyInstance<ReturnType<typeof global.console[K]>, Parameters<typeof global.console[K]>>
+} = {
+	log  : jest.spyOn(global.console, 'log').mockImplementation(),
+	debug: jest.spyOn(global.console, 'debug').mockImplementation(),
+	trace: jest.spyOn(global.console, 'trace').mockImplementation(),
+	info : jest.spyOn(global.console, 'info').mockImplementation(),
+	warn : jest.spyOn(global.console, 'warn').mockImplementation(),
+	error: jest.spyOn(global.console, 'error').mockImplementation(),
+};
 
 const mockProcess = emitter(process);
 
-const root     = '/log/root';
-const mockDate = new Date(2012, 11, 26, 7, 40, 0, 25);
-const stack    = 'Error\n    at test.js:1:1\n    at index.js:1:1';
+const root        = '/log/root';
+const mockDate    = new Date(2012, 11, 26, 7, 40, 0, 25);
+const stack       = 'Error\n    at test.js:1:1\n    at index.js:1:1';
+const logFileName = '2012.12.26_07.40.00.025.log';
+const logFilePath = '/log/root/2012.12.26_07.40.00.025.log';
 
 let logger: Logger;
-let exists: boolean;
-let appendFileSyncSpy: jest.SpyInstance;
 let getStackTraceSpy: jest.SpyInstance;
 
 beforeAll(() => {
-	appendFileSyncSpy = jest.spyOn(fs, 'appendFileSync');
-	getStackTraceSpy  = jest.spyOn(Logger, 'getStackTrace');
+	getStackTraceSpy = jest.spyOn(Logger, 'getStackTrace');
 	jest.setSystemTime(mockDate);
 });
 
 beforeEach(() => {
-	appendFileSyncSpy.mockImplementation();
+	mockFs({
+		[root]: {},
+	});
+
 	getStackTraceSpy.mockReturnValue(stack);
 });
 
 afterAll(() => {
-	appendFileSyncSpy.mockRestore();
+	mockFs.restore();
+
 	getStackTraceSpy.mockRestore();
 	jest.setSystemTime(new Date());
-	global.console = originalConsole;
+
+	for (const func of mockFunctions) {
+		global.console[func] = originalConsole[func];
+	}
 });
 
 describe('src/lib/logger', () => {
@@ -62,16 +78,19 @@ describe('src/lib/logger', () => {
 		describe('root', () => {
 			it('should not be set by default', () => {
 				logger = new Logger();
+
 				expect(logger['root']).toBeUndefined();
 			});
 
 			it('should be set if specified', () => {
-				logger = new Logger({ root : '/log/app' });
+				logger = new Logger({ root: '/log/app' });
+
 				expect(logger['root']).toEqual('/log/app');
 			});
 
 			it('should strip trailing slash', () => {
-				logger = new Logger({ root : '/log/app/' });
+				logger = new Logger({ root: '/log/app/' });
+
 				expect(logger['root']).toEqual('/log/app');
 			});
 
@@ -80,23 +99,27 @@ describe('src/lib/logger', () => {
 				const errorSpy = jest.spyOn(logger, 'error').mockImplementation();
 				const error    = new Error('test exception');
 				mockProcess.emit('uncaughtException', error);
+
 				expect(errorSpy).toHaveBeenCalledWith(error);
+
 				errorSpy.mockRestore();
 			});
 		});
 		describe('showDebug', () => {
 			it('should be set to false by default', () => {
 				logger = new Logger();
+
 				expect(logger['showDebug']).toEqual(false);
 			});
 
 			[
-				{ argument : true, property : true },
-				{ argument : false, property : false },
-				{ argument : undefined, property : false },
-			].forEach(({ argument, property }: { argument : boolean | undefined; property : boolean }) => {
+				{ argument: true, property: true },
+				{ argument: false, property: false },
+				{ argument: undefined, property: false },
+			].forEach(({ argument, property }: { argument: boolean | undefined; property: boolean }) => {
 				it(`should be set to ${property} if specified ${argument}`, () => {
-					logger = new Logger({ showDebug : argument });
+					logger = new Logger({ showDebug: argument });
+
 					expect(logger['showDebug']).toEqual(property);
 				});
 			});
@@ -106,16 +129,19 @@ describe('src/lib/logger', () => {
 	describe('extension', () => {
 		it('should be "log" by default', () => {
 			logger = new Logger();
+
 			expect(logger['extension']).toEqual('log');
 		});
 
 		it('should be set if specified', () => {
-			logger = new Logger({ extension : 'txt' });
+			logger = new Logger({ extension: 'txt' });
+
 			expect(logger['extension']).toEqual('txt');
 		});
 
 		it('should strip leading dot from custom extension', () => {
-			logger = new Logger({ extension : '.txt' });
+			logger = new Logger({ extension: '.txt' });
+
 			expect(logger['extension']).toEqual('txt');
 		});
 	});
@@ -123,21 +149,25 @@ describe('src/lib/logger', () => {
 	describe('filename', () => {
 		it('should be undefined by default', () => {
 			logger = new Logger();
+
 			expect(logger['filename']).toBeUndefined();
 		});
 
 		it('should be set if root is specified', () => {
 			logger = new Logger({ root });
+
 			expect(logger['filename']).toEqual('/log/root/2012.12.26_07.40.00.025.log');
 		});
 
 		it('should be grouped by date', () => {
-			logger = new Logger({ root, groupByDate : true });
+			logger = new Logger({ root, groupByDate: true });
+
 			expect(logger['filename']).toEqual('/log/root/2012.12.26/07.40.00.025.log');
 		});
 
 		it('should be set using custom extension', () => {
-			logger = new Logger({ root, extension : '.txt' });
+			logger = new Logger({ root, extension: '.txt' });
+
 			expect(logger['filename']).toEqual('/log/root/2012.12.26_07.40.00.025.txt');
 		});
 	});
@@ -145,88 +175,90 @@ describe('src/lib/logger', () => {
 	describe('dirname', () => {
 		it('should be undefined by default', () => {
 			logger = new Logger();
+
 			expect(logger['dirname']).toBeUndefined();
 		});
 
 		it('should be set if root is specified', () => {
 			logger = new Logger({ root });
+
 			expect(logger['dirname']).toEqual('/log/root');
 		});
 
 		it('should be grouped by date', () => {
-			logger = new Logger({ root, groupByDate : true });
+			logger = new Logger({ root, groupByDate: true });
+
 			expect(logger['dirname']).toEqual('/log/root/2012.12.26');
 		});
 	});
 
 	describe('log', () => {
-		it('should not write into log file if root is not specified', () => {
+		it('should not create log file if root is not specified', () => {
 			logger = new Logger();
 			logger.log('test string');
-			expect(fs.existsSync).not.toHaveBeenCalled();
-			expect(fs.mkdirSync).not.toHaveBeenCalled();
-			expect(fs.appendFileSync).not.toHaveBeenCalled();
+
+			expect(fs.existsSync(root)).toBe(true);
+			expect(fs.readdirSync(root)).toEqual([ ]);
 		});
 
-		it('should check log directory', () => {
+		it('should create log file is root is specified', () => {
 			logger = new Logger({ root });
 			logger.log('test string');
-			expect(fs.existsSync).toHaveBeenCalledWith('/log/root');
+
+			expect(fs.existsSync(root)).toBe(true);
+			expect(fs.readdirSync(root)).toEqual([ logFileName ]);
 		});
 
 		it('should create log directory if does not exist', () => {
-			exists = false;
-			logger = new Logger({ root });
-			logger.log('test string');
-			expect(fs.mkdirSync).toHaveBeenCalledWith('/log/root', { recursive : true });
-		});
+			mockFs({});
 
-		it('should not create log directory if exists', () => {
-			exists = true;
 			logger = new Logger({ root });
 			logger.log('test string');
-			expect(fs.mkdirSync).not.toHaveBeenCalled();
+
+			expect(fs.existsSync(root)).toBe(true);
+			expect(fs.readdirSync(root)).toEqual([ logFileName ]);
 		});
 
 		it('should log string', () => {
 			logger = new Logger({ root });
 			logger.log('test string');
+
 			expect(consoleSpy.log.mock.calls).toMatchSnapshot();
-			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
+			expect(fs.readFileSync(logFilePath).toString()).toMatchSnapshot();
 		});
 
-		it('should log timestamp and string with showTime = true', () => {
-			logger = new Logger({ root, showTime : true });
+		it('should skip timestamp with showTime = false', () => {
+			logger = new Logger({ root, showTime: false });
 			logger.log('test string');
 			expect(consoleSpy.log.mock.calls).toMatchSnapshot();
-			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
+			expect(fs.readFileSync(logFilePath).toString()).toMatchSnapshot();
 		});
 
 		it('should log two strings', () => {
 			logger = new Logger({ root });
 			logger.log('test1', 'test2');
 			expect(consoleSpy.log.mock.calls).toMatchSnapshot();
-			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
+			expect(fs.readFileSync(logFilePath).toString()).toMatchSnapshot();
 		});
 
 		it('should log object', () => {
 			logger = new Logger({ root });
-			logger.log({ 'a' : 1, 'second key' : { date : new Date().toLocaleString('ru') } });
+			logger.log({ 'a': 1, 'second key': { date: new Date().toLocaleString('ru') } });
 			expect(consoleSpy.log.mock.calls).toMatchSnapshot();
-			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
+			expect(fs.readFileSync(logFilePath).toString()).toMatchSnapshot();
 		});
 
 		it('should log string, regex and object', () => {
 			logger = new Logger({ root });
-			logger.log('test1', /^\d+$/, { b : 2 });
+			logger.log('test1', /^\d+$/, { b: 2 });
 			expect(consoleSpy.log.mock.calls).toMatchSnapshot();
-			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
+			expect(fs.readFileSync(logFilePath).toString()).toMatchSnapshot();
 		});
 
 		describe('exported', () => {
 			it('should not write to file', () => {
 				log('test string');
-				expect(appendFileSyncSpy).not.toHaveBeenCalled();
+				expect(fs.readdirSync(root)).toHaveLength(0);
 			});
 
 			it('should call console.log', () => {
@@ -248,29 +280,29 @@ describe('src/lib/logger', () => {
 			logger = new Logger({ root });
 			logger.debug('test string');
 			expect(consoleSpy.debug).not.toHaveBeenCalled();
-			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
+			expect(fs.readFileSync(logFilePath).toString()).toMatchSnapshot();
 		});
 
 		it('should show log if showDebug = true', () => {
-			logger = new Logger({ root, showDebug : true });
+			logger = new Logger({ root, showDebug: true });
 			logger.debug('test string');
 			expect(consoleSpy.debug).toHaveBeenCalledTimes(1);
 			expect(consoleSpy.debug.mock.calls).toMatchSnapshot();
-			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
+			expect(fs.readFileSync(logFilePath).toString()).toMatchSnapshot();
 		});
 
-		it('should show timestamp and log if showDebug = true and showTime = true', () => {
-			logger = new Logger({ root, showDebug : true, showTime : true });
+		it('should skip timestamp and show log if showDebug = true and showTime = false', () => {
+			logger = new Logger({ root, showDebug: true, showTime: false });
 			logger.debug('test string');
 			expect(consoleSpy.debug).toHaveBeenCalledTimes(1);
 			expect(consoleSpy.debug.mock.calls).toMatchSnapshot();
-			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
+			expect(fs.readFileSync(logFilePath).toString()).toMatchSnapshot();
 		});
 
 		describe('exported', () => {
 			it('should not write to file', () => {
 				debug('test string');
-				expect(appendFileSyncSpy).not.toHaveBeenCalled();
+				expect(fs.readdirSync(root)).toHaveLength(0);
 			});
 
 			it('should call console.debug', () => {
@@ -280,7 +312,7 @@ describe('src/lib/logger', () => {
 
 			it('should call console.debug the same way as the method of default Logger with showDebug always set', () => {
 				debug('test string');
-				logger = new Logger({ root, showDebug : true });
+				logger = new Logger({ root, showDebug: true });
 				logger.debug('test string');
 				expect(consoleSpy.debug.mock.calls[0]).toEqual(consoleSpy.debug.mock.calls[1]);
 			});
@@ -292,29 +324,29 @@ describe('src/lib/logger', () => {
 			logger = new Logger({ root });
 			logger.trace('test string');
 			expect(consoleSpy.debug).not.toHaveBeenCalled();
-			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
+			expect(fs.readFileSync(logFilePath).toString()).toMatchSnapshot();
 		});
 
 		it('should append stack and show log if showDebug = true', () => {
-			logger = new Logger({ root, showDebug : true });
+			logger = new Logger({ root, showDebug: true });
 			logger.trace('test string');
 			expect(consoleSpy.debug).toHaveBeenCalledTimes(1);
 			expect(consoleSpy.debug.mock.calls).toMatchSnapshot();
-			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
+			expect(fs.readFileSync(logFilePath).toString()).toMatchSnapshot();
 		});
 
-		it('should append stack and show timestamp and log if showDebug = true and showTime = true', () => {
-			logger = new Logger({ root, showDebug : true, showTime : true });
+		it('should append stack and hide timestamp and show log if showDebug = true and showTime = false', () => {
+			logger = new Logger({ root, showDebug: true, showTime: false });
 			logger.trace('test string');
 			expect(consoleSpy.debug).toHaveBeenCalledTimes(1);
 			expect(consoleSpy.debug.mock.calls).toMatchSnapshot();
-			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
+			expect(fs.readFileSync(logFilePath).toString()).toMatchSnapshot();
 		});
 
 		describe('exported', () => {
 			it('should not write to file', () => {
 				trace('test string');
-				expect(appendFileSyncSpy).not.toHaveBeenCalled();
+				expect(fs.readdirSync(root)).toHaveLength(0);
 			});
 
 			it('should call console.debug', () => {
@@ -324,7 +356,7 @@ describe('src/lib/logger', () => {
 
 			it('should call console.debug the same way as the method of default Logger with showDebug always set', () => {
 				trace('test string');
-				logger = new Logger({ root, showDebug : true });
+				logger = new Logger({ root, showDebug: true });
 				logger.trace('test string');
 				expect(consoleSpy.debug.mock.calls[0]).toEqual(consoleSpy.debug.mock.calls[1]);
 			});
@@ -334,22 +366,22 @@ describe('src/lib/logger', () => {
 	describe('info', () => {
 		it('should apply green bright color to console', () => {
 			logger = new Logger({ root });
-			logger.info('test1', /^\d+$/, { b : 2 });
+			logger.info('test1', /^\d+$/, { b: 2 });
 			expect(consoleSpy.info.mock.calls).toMatchSnapshot();
-			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
+			expect(fs.readFileSync(logFilePath).toString()).toMatchSnapshot();
 		});
 
-		it('should apply green bright color to console and prepend timestamp if showTime = true', () => {
-			logger = new Logger({ root, showTime : true });
-			logger.info('test1', /^\d+$/, { b : 2 });
+		it('should apply green bright color to console and skip timestamp if showTime = false', () => {
+			logger = new Logger({ root, showTime: false });
+			logger.info('test1', /^\d+$/, { b: 2 });
 			expect(consoleSpy.info.mock.calls).toMatchSnapshot();
-			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
+			expect(fs.readFileSync(logFilePath).toString()).toMatchSnapshot();
 		});
 
 		describe('exported', () => {
 			it('should not write to file', () => {
 				info('test string');
-				expect(appendFileSyncSpy).not.toHaveBeenCalled();
+				expect(fs.readdirSync(root)).toHaveLength(0);
 			});
 
 			it('should call console.info', () => {
@@ -369,22 +401,22 @@ describe('src/lib/logger', () => {
 	describe('warn', () => {
 		it('should apply yellow bright color to console', () => {
 			logger = new Logger({ root });
-			logger.warn('test1', /^\d+$/, { b : 2 });
+			logger.warn('test1', /^\d+$/, { b: 2 });
 			expect(consoleSpy.warn.mock.calls).toMatchSnapshot();
-			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
+			expect(fs.readFileSync(logFilePath).toString()).toMatchSnapshot();
 		});
 
-		it('should apply yellow bright color to console and prepend timestamp if showTime = true', () => {
-			logger = new Logger({ root, showTime : true });
-			logger.warn('test1', /^\d+$/, { b : 2 });
+		it('should apply yellow bright color to console and skip timestamp if showTime = false', () => {
+			logger = new Logger({ root, showTime: false });
+			logger.warn('test1', /^\d+$/, { b: 2 });
 			expect(consoleSpy.warn.mock.calls).toMatchSnapshot();
-			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
+			expect(fs.readFileSync(logFilePath).toString()).toMatchSnapshot();
 		});
 
 		describe('exported', () => {
 			it('should not write to file', () => {
 				warn('test string');
-				expect(appendFileSyncSpy).not.toHaveBeenCalled();
+				expect(fs.readdirSync(root)).toHaveLength(0);
 			});
 
 			it('should call console.warn', () => {
@@ -404,16 +436,16 @@ describe('src/lib/logger', () => {
 	describe('error', () => {
 		it('should apply red bright color to console', () => {
 			logger = new Logger({ root });
-			logger.error('test1', /^\d+$/, { b : 2 });
+			logger.error('test1', /^\d+$/, { b: 2 });
 			expect(consoleSpy.error.mock.calls).toMatchSnapshot();
-			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
+			expect(fs.readFileSync(logFilePath).toString()).toMatchSnapshot();
 		});
 
-		it('should apply red bright color to console and prepend timestamp if showTime = true', () => {
-			logger = new Logger({ root, showTime : true });
-			logger.error('test1', /^\d+$/, { b : 2 });
+		it('should apply red bright color to console and skip timestamp if showTime = false', () => {
+			logger = new Logger({ root, showTime: false });
+			logger.error('test1', /^\d+$/, { b: 2 });
 			expect(consoleSpy.error.mock.calls).toMatchSnapshot();
-			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
+			expect(fs.readFileSync(logFilePath).toString()).toMatchSnapshot();
 		});
 
 		it('should log error with stack', () => {
@@ -422,7 +454,7 @@ describe('src/lib/logger', () => {
 			error.stack = 'Error\n    at error.js:1:1';
 			logger.error(error);
 			expect(consoleSpy.error.mock.calls).toMatchSnapshot();
-			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
+			expect(fs.readFileSync(logFilePath).toString()).toMatchSnapshot();
 		});
 
 		it('should log error without stack', () => {
@@ -431,13 +463,13 @@ describe('src/lib/logger', () => {
 			delete error.stack;
 			logger.error(error);
 			expect(consoleSpy.error.mock.calls).toMatchSnapshot();
-			expect(appendFileSyncSpy.mock.calls).toMatchSnapshot();
+			expect(fs.readFileSync(logFilePath).toString()).toMatchSnapshot();
 		});
 
 		describe('exported', () => {
 			it('should not write to file', () => {
 				error('test string');
-				expect(appendFileSyncSpy).not.toHaveBeenCalled();
+				expect(fs.readdirSync(root)).toHaveLength(0);
 			});
 
 			it('should call console.error', () => {
@@ -461,42 +493,58 @@ describe('src/lib/logger', () => {
 
 		describe('default', () => {
 			it('should return date', () => {
-				expect(Logger.timestamp({ date : true })).toEqual('2012-12-26');
+				expect(Logger.timestamp({ date: true })).toEqual('2012-12-26');
 			});
 
 			it('should return time', () => {
-				expect(Logger.timestamp({ time : true })).toEqual('07:40:00.025');
+				expect(Logger.timestamp({ time: true })).toEqual('07:40:00.025');
 			});
 
 			it('should return date and time', () => {
-				expect(Logger.timestamp({ date : true, time : true })).toEqual('2012-12-26 07:40:00.025');
+				expect(Logger.timestamp({ date: true, time: true })).toEqual('2012-12-26 07:40:00.025');
 			});
 		});
 
 		describe('safe', () => {
 			it('should return date', () => {
-				expect(Logger.timestamp({ safe : true, date : true })).toEqual('2012.12.26');
+				expect(Logger.timestamp({ safe: true, date: true })).toEqual('2012.12.26');
 			});
 
 			it('should return time', () => {
-				expect(Logger.timestamp({ safe : true, time : true })).toEqual('07.40.00.025');
+				expect(Logger.timestamp({ safe: true, time: true })).toEqual('07.40.00.025');
 			});
 
 			it('should return date and time', () => {
-				expect(Logger.timestamp({ safe : true, date : true, time : true })).toEqual('2012.12.26_07.40.00.025');
+				expect(Logger.timestamp({ safe: true, date: true, time: true })).toEqual('2012.12.26_07.40.00.025');
 			});
 		});
 	});
 
 	describe('clear', () => {
-		it('should not do anything if log directory if specified', () => {
-			new Logger().clear();
-			expect(fs.rmSync).not.toHaveBeenCalled();
+		it('should clear log directory if specified', () => {
+			mockFs({});
+
+			const logger = new Logger({ root });
+			logger.log('test');
+
+			expect(fs.existsSync(root)).toBe(true);
+
+			logger.clear();
+
+			expect(fs.existsSync(root)).toBe(false);
 		});
 
-		it('should clear log directory if specified', () => {
-			new Logger({ root }).clear();
-			expect(fs.rmSync).toHaveBeenCalledWith(root, { recursive : true, force : true });
+		it('should not do anything if log directory is not specified', () => {
+			mockFs({});
+
+			const logger = new Logger();
+			logger.log('test');
+
+			expect(fs.existsSync(root)).toBe(false);
+
+			logger.clear();
+
+			expect(fs.existsSync(root)).toBe(false);
 		});
 	});
 });
