@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`src/lib/logger debug should not show log by default 1`] = `
 "2012-12-26 07:40:00.025 test string
