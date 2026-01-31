@@ -7,7 +7,7 @@ import moment from 'moment';
 export const methods = [ 'log', 'debug', 'trace', 'info', 'warn', 'error' ] as const;
 
 type LoggerMethods = {
-	[K in typeof methods[number]]: (...data: unknown[])=> void;
+	[K in typeof methods[number]]: (...data: unknown[]) => void;
 };
 
 export class Logger implements LoggerMethods {
@@ -119,9 +119,9 @@ export class Logger implements LoggerMethods {
 	}
 
 	private process(
-		consoleFunc: (message?: unknown, ...optionalParams: unknown[])=> void,
+		consoleFunc: (message?: unknown, ...optionalParams: unknown[]) => void,
 		data: unknown[], {
-			modifier = (text: number | string) => text.toString(), stack, debug }: { modifier?: (text: number | string)=> string;
+			modifier = (text: number | string) => text.toString(), stack, debug }: { modifier?: (text: number | string) => string;
 			stack?: boolean;
 			debug?: boolean;
 		} = {},
